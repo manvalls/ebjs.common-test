@@ -5,7 +5,8 @@
   "main": "main.js",
   "dependencies": {
     "ebjs": "",
-    "vz.test": ""
+    "vz.test": "",
+    "vz.buffer": ""
   },
   "repository": {
     "type": "git",
