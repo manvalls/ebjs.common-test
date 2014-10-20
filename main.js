@@ -1,243 +1,103 @@
-var Test = require('vz.test'),
-    ebjs = require('ebjs'),
-    vzBuffer = require('vz.buffer'),
-    assert = require('assert'),
+var test = require('vz.test'),
+    walk = require('vz.walk'),
+    Yarr = require('vz.yarr'),
     
-    Stream = global.process?require('st'+'ream'):null;
+    ebjs = require('ebjs'),
+    assert = require('assert');
 
 module.exports = function(array,deep){
-  var txt,cons;
-  
-  if(global.Buffer){
-    txt = 'Buffer';
-    cons = global.Buffer;
-  }else{
-    txt = 'Blob';
-    cons = Blob;
-  }
-  
-  new Test(txt,function(test){
+  return walk(function*(){
     
-    for(i = 0;i < array.length;i++) (function(i){
+    if(global.Buffer) yield test('Buffer',function*(){
+      var data,result;
       
-      ebjs.pack(array[i],test.wrap(function(data){
-        assert(data instanceof cons);
-        ebjs.unpack(data,test.wrap(function(result){
-          if(deep) assert.deepEqual(result,array[i]);
-          else assert.strictEqual(result,array[i]);
-        }),{sync: true});
-      }),{sync: true});
-      
-    })(i);
-    
-  });
-  
-  new Test('ArrayBuffer',function(test){
-    
-    for(i = 0;i < array.length;i++) (function(i){
-      
-      ebjs.pack(array[i],test.wrap(function(data){
-        assert(data instanceof ArrayBuffer);
-        ebjs.unpack(data,test.wrap(function(result){
-          if(deep) assert.deepEqual(result,array[i]);
-          else assert.strictEqual(result,array[i]);
-        }),{sync: true});
-      }),{sync: true,type: 'arraybuffer'});
-      
-    })(i);
-    
-  });
-  
-  new Test('base64',function(test){
-    
-    for(i = 0;i < array.length;i++) (function(i){
-      
-      ebjs.pack(array[i],test.wrap(function(data){
-        assert.strictEqual(data.constructor,String);
-        ebjs.unpack(data,test.wrap(function(result){
-          if(deep) assert.deepEqual(result,array[i]);
-          else assert.strictEqual(result,array[i]);
-        }),{sync: true});
-      }),{sync: true,type: 'base64'});
-      
-    })(i);
-    
-  });
-  
-  new Test('dataurl',function(test){
-    
-    for(i = 0;i < array.length;i++) (function(i){
-      
-      ebjs.pack(array[i],test.wrap(function(data){
-        assert.strictEqual(data.constructor,String);
-        ebjs.unpack(data,test.wrap(function(result){
-          if(deep) assert.deepEqual(result,array[i]);
-          else assert.strictEqual(result,array[i]);
-        }),{sync: true});
-      }),{sync: true,type: 'dataurl'});
-      
-    })(i);
-    
-  });
-  
-  if(Stream) new Test('Stream',function(test){
-    
-    for(i = 0;i < array.length;i++) (function(i){
-      
-      ebjs.pack(array[i],test.wrap(function(data){
-        assert(data instanceof Stream);
-        ebjs.unpack(data,test.wrap(function(result){
-          if(deep) assert.deepEqual(result,array[i]);
-          else assert.strictEqual(result,array[i]);
-        }),{sync: true});
-      }),{sync: true,target: new Stream.PassThrough()});
-      
-    })(i);
-    
-  });
-  
-  new Test('vzBuffer sync',function(test){
-    
-    new Test(txt,function(test){
-      
-      for(i = 0;i < array.length;i++) (function(i){
+      for(var i = 0;i < array.length;i++){
+        data = yield ebjs.pack(array[i],Buffer);
+        result = yield ebjs.unpack(data);
         
-        ebjs.pack(array[i],test.wrap(function(data){
-          assert(data instanceof vzBuffer);
-          
-          ebjs.unpack(data,test.wrap(function(result){
-            if(deep) assert.deepEqual(result,array[i]);
-            else assert.strictEqual(result,array[i]);
-          }),{sync: true,allowBlobs: true});
-        }),{sync: true,target: new vzBuffer()});
-        
-      })(i);
+        if(isNaN(array[i])) assert(isNaN(result),'isNaN(' + result + ')');
+        else if(deep) assert.deepEqual(result,array[i]);
+        else assert.equal(result,array[i]);
+      }
       
     });
     
-    new Test('ArrayBuffer',function(test){
+    yield test('Uint8Array',function*(){
+      var data,result;
       
-      for(i = 0;i < array.length;i++) (function(i){
+      for(var i = 0;i < array.length;i++){
+        data = yield ebjs.pack(array[i],Uint8Array);
+        result = yield ebjs.unpack(data);
         
-        ebjs.pack(array[i],test.wrap(function(data){
-          assert(data instanceof vzBuffer);
-          
-          ebjs.unpack(data,test.wrap(function(result){
-            if(deep) assert.deepEqual(result,array[i]);
-            else assert.strictEqual(result,array[i]);
-          }),{sync: true});
-        }),{sync: true,target: new vzBuffer(),type: 'arraybuffer'});
-        
-      })(i);
+        if(isNaN(array[i])) assert(isNaN(result),'isNaN(' + result + ')');
+        else if(deep) assert.deepEqual(result,array[i]);
+        else assert.equal(result,array[i]);
+      }
       
     });
     
-    new Test('base64',function(test){
+    if(global.Blob) yield test('Blob',function*(){
+      var data,result;
       
-      for(i = 0;i < array.length;i++) (function(i){
+      for(var i = 0;i < array.length;i++){
+        data = yield ebjs.pack(array[i],Blob);
+        result = yield ebjs.unpack(data);
         
-        ebjs.pack(array[i],test.wrap(function(data){
-          assert(data instanceof vzBuffer);
-          
-          ebjs.unpack(data,test.wrap(function(result){
-            if(deep) assert.deepEqual(result,array[i]);
-            else assert.strictEqual(result,array[i]);
-          }),{sync: true});
-        }),{sync: true,target: new vzBuffer(),type: 'base64'});
-        
-      })(i);
+        if(isNaN(array[i])) assert(isNaN(result),'isNaN(' + result + ')');
+        else if(deep) assert.deepEqual(result,array[i]);
+        else assert.equal(result,array[i]);
+      }
       
     });
     
-    new Test('dataurl',function(test){
+    yield test('Yarr',function*(){
       
-      for(i = 0;i < array.length;i++) (function(i){
+      if(global.Buffer) yield test('Buffer',function*(){
+        var data = new Yarr(),result,yd;
         
-        ebjs.pack(array[i],test.wrap(function(data){
-          assert(data instanceof vzBuffer);
+        for(var i = 0;i < array.length;i++){
+          yd = ebjs.pack(array[i],Buffer,data);
+          result = yield ebjs.unpack(data);
+          yield yd;
           
-          ebjs.unpack(data,test.wrap(function(result){
-            if(deep) assert.deepEqual(result,array[i]);
-            else assert.strictEqual(result,array[i]);
-          }),{sync: true});
-        }),{sync: true,target: new vzBuffer(),type: 'dataurl'});
+          if(isNaN(array[i])) assert(isNaN(result),'isNaN(' + result + ')');
+          else if(deep) assert.deepEqual(result,array[i]);
+          else assert.equal(result,array[i]);
+        }
         
-      })(i);
+      });
+      
+      yield test('Uint8Array',function*(){
+        var data = new Yarr(),result,yd;
+        
+        for(var i = 0;i < array.length;i++){
+          yd = ebjs.pack(array[i],Uint8Array,data);
+          result = yield ebjs.unpack(data);
+          yield yd;
+          
+          if(isNaN(array[i])) assert(isNaN(result),'isNaN(' + result + ')');
+          else if(deep) assert.deepEqual(result,array[i]);
+          else assert.equal(result,array[i]);
+        }
+        
+      });
+      
+      if(global.Blob) yield test('Blob',function*(){
+        var data = new Yarr(),result,yd;
+        
+        for(var i = 0;i < array.length;i++){
+          yd = ebjs.pack(array[i],Blob,data);
+          result = yield ebjs.unpack(data);
+          yield yd;
+          
+          if(isNaN(array[i])) assert(isNaN(result),'isNaN(' + result + ')');
+          else if(deep) assert.deepEqual(result,array[i]);
+          else assert.equal(result,array[i]);
+        }
+        
+      });
       
     });
     
   });
-  
-  new Test('vzBuffer async',function(test){
-    
-    new Test(txt,function(test){
-      
-      for(i = 0;i < array.length;i++) (function(i){
-        
-        ebjs.pack(array[i],test.wrap(function(data){
-          assert(data instanceof vzBuffer);
-          
-          ebjs.unpack(data,test.wrap(function(result){
-            if(deep) assert.deepEqual(result,array[i]);
-            else assert.strictEqual(result,array[i]);
-          }),{allowBlobs: true});
-        }),{target: new vzBuffer()});
-        
-      })(i);
-      
-    });
-    
-    new Test('ArrayBuffer',function(test){
-      
-      for(i = 0;i < array.length;i++) (function(i){
-        
-        ebjs.pack(array[i],test.wrap(function(data){
-          assert(data instanceof vzBuffer);
-          
-          ebjs.unpack(data,test.wrap(function(result){
-            if(deep) assert.deepEqual(result,array[i]);
-            else assert.strictEqual(result,array[i]);
-          }));
-        }),{target: new vzBuffer(),type: 'arraybuffer'});
-        
-      })(i);
-      
-    });
-    
-    new Test('base64',function(test){
-      
-      for(i = 0;i < array.length;i++) (function(i){
-        
-        ebjs.pack(array[i],test.wrap(function(data){
-          assert(data instanceof vzBuffer);
-          
-          ebjs.unpack(data,test.wrap(function(result){
-            if(deep) assert.deepEqual(result,array[i]);
-            else assert.strictEqual(result,array[i]);
-          }));
-        }),{target: new vzBuffer(),type: 'base64'});
-        
-      })(i);
-      
-    });
-    
-    new Test('dataurl',function(test){
-      
-      for(i = 0;i < array.length;i++) (function(i){
-        
-        ebjs.pack(array[i],test.wrap(function(data){
-          assert(data instanceof vzBuffer);
-          
-          ebjs.unpack(data,test.wrap(function(result){
-            if(deep) assert.deepEqual(result,array[i]);
-            else assert.strictEqual(result,array[i]);
-          }));
-        }),{target: new vzBuffer(),type: 'dataurl'});
-        
-      })(i);
-      
-    });
-    
-  });
-  
 };
